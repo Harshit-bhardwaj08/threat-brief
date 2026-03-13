@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ===== APPLE STORE LIGHT THEME (default) ===== */
+:root {
+  /* Backgrounds */
+  --background: #F5F5F7;
+  --foreground: #1D1D1F;
+
+  /* Cards */
+  --card: #FFFFFF;
+  --card-foreground: #1D1D1F;
+
+  --popover: #FFFFFF;
+  --popover-foreground: #1D1D1F;
+
+  /* Primary — Apple Blue */
+  --primary: #0066CC;
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #F5F5F7;
+  --secondary-foreground: #1D1D1F;
+
+  /* Muted — Apple Silver/Gray */
+  --muted: #F5F5F7;
+  --muted-foreground: #86868B;
+
+  --accent: #F5F5F7;
+  --accent-foreground: #1D1D1F;
+
+  --destructive: #FF3B30;
+
+  --border: #D2D2D7;
+  --input: #D2D2D7;
+  --ring: #0066CC;
+
+  /* Charts */
+  --chart-1: #007AFF;
+  --chart-2: #FF3B30;
+  --chart-3: #FFCC00;
+  --chart-4: #34C759;
+  --chart-5: #5856D6;
+
+  --radius: 1.25rem;
+
+  /* Sidebar */
+  --sidebar: #F5F5F7;
+  --sidebar-foreground: #1D1D1F;
+  --sidebar-primary: #0066CC;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: #1D1D1F;
+  --sidebar-border: #D2D2D7;
+  --sidebar-ring: #0066CC;
+}
+
+/* Keep dark variant available but unused by default */
+.dark {
+  --background: oklch(0.10 0.005 260);
+  --foreground: oklch(0.92 0.008 240);
+  --card: oklch(0.14 0.008 255);
+  --card-foreground: oklch(0.92 0.008 240);
+  --popover: oklch(0.14 0.008 255);
+  --popover-foreground: oklch(0.92 0.008 240);
+  --primary: oklch(0.72 0.17 155);
+  --primary-foreground: oklch(0.10 0 0);
+  --secondary: oklch(0.20 0.008 255);
+  --secondary-foreground: oklch(0.85 0.01 240);
+  --muted: oklch(0.18 0.008 255);
+  --muted-foreground: oklch(0.60 0.01 240);
+  --accent: oklch(0.22 0.01 255);
+  --accent-foreground: oklch(0.90 0.008 240);
+  --destructive: oklch(0.60 0.22 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.72 0.17 155);
+  --sidebar: oklch(0.12 0.006 258);
+  --sidebar-foreground: oklch(0.92 0.008 240);
+  --sidebar-primary: oklch(0.72 0.17 155);
+  --sidebar-primary-foreground: oklch(0.10 0 0);
+  --sidebar-accent: oklch(0.20 0.008 255);
+  --sidebar-accent-foreground: oklch(0.85 0.01 240);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.72 0.17 155);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ===== APPLE CARD UTILITY ===== */
+@layer utilities {
+  .apple-card {
+    background: #FFFFFF;
+    border-radius: 1.5rem;
+    border: 1px solid #E5E5EA;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .apple-card-hover {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .apple-card-hover:hover {
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Legacy glass-panel - now renders as clean white card in light mode */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid #E5E5EA;
+  }
+
+  .glass-panel-bright {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid #D1D1D6;
+  }
+
+  /* Light-mode neon replacements — now subtle color borders */
+  .neon-border-green {
+    border-color: #34C759;
+    box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.12);
+  }
+
+  .neon-border-red {
+    border-color: #FF3B30;
+    box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.10);
+  }
+
+  .neon-border-amber {
+    border-color: #FF9F0A;
+    box-shadow: 0 0 0 3px rgba(255, 159, 10, 0.10);
+  }
+
+  .neon-border-cyan {
+    border-color: #32ADE6;
+    box-shadow: 0 0 0 3px rgba(50, 173, 230, 0.10);
+  }
+
+  /* Text glows — subtle in light mode */
+  .glow-text-green { color: #1D8348; }
+  .glow-text-red { color: #C0392B; }
+  .glow-text-amber { color: #B7610B; }
+
+  /* Scan line & grid — hidden in light mode */
+  .scan-line { display: none; }
+  .soc-grid-bg { display: none; }
+}
