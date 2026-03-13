@@ -11,7 +11,7 @@ ThreatBrief is a modern Threat Intelligence platform that filters the global noi
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 15+ (App Router)
@@ -33,7 +33,7 @@ ThreatBrief is a modern Threat Intelligence platform that filters the global noi
 
 ---
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### 1. Backend Setup
 ```bash
@@ -65,7 +65,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
 ---
 
-## 🧠 Project Approach: The VulIntel Engine
+## Project Approach: The VulIntel Engine
 
 ThreatBrief's intelligence engine, **VulIntel**, follows a strict logic pipeline to ensure high data density and relevance:
 
@@ -77,7 +77,7 @@ ThreatBrief's intelligence engine, **VulIntel**, follows a strict logic pipeline
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 ### Background Fetching Pipeline
 The backend runs a persistent background worker (`asyncio`) that polls the NVD and CISA feeds every 30 minutes. New CVEs are automatically enriched with EPSS scores and queued for AI summarization if they match any active user's tech stack.
@@ -90,7 +90,7 @@ The backend runs a persistent background worker (`asyncio`) that polls the NVD a
 
 ---
 
-## 👨‍💻 Author
+## Author
 **Harshit Bhardwaj**  
 Computer Science Undergraduate  
 *Building systems that turn data into defense.*
