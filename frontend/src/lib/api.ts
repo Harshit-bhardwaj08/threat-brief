@@ -122,9 +122,20 @@ export async function scanSandboxThreats(tags: string[]): Promise<PersonalizedDa
 }
 
 export async function resetUserStack(userId: number): Promise<{ message: string }> {
-  const res = await fetch(`${API_URL}/users/${userId}/reset`, {
-    method: "DELETE",
-  });
-  if (!res.ok) throw new Error("Failed to reset core stack");
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/users/${userId}/reset`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      // Pulling error details helps you find out why Railway is rejecting you
+      const errorBody = await res.json().catch(() => ({}));
+      throw new Error(errorBody.detail || `HTTP Error ${res.status}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Critical: System reset failed", error);
+    throw error;
+  }
 }
