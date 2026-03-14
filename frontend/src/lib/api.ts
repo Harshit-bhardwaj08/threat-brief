@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api";
 
 export interface TechNode {
   name: string;
@@ -80,7 +80,7 @@ export async function updateUserStack(userId: number, techStack: TechNode[]): Pr
 export async function scanTechStackFile(userId: number, file: File): Promise<UserResponse> {
   const formData = new FormData();
   formData.append("file", file);
-  
+
   const res = await fetch(`${API_URL}/users/${userId}/scan`, {
     method: "POST",
     body: formData,
