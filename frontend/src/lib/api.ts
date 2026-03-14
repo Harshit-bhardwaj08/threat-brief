@@ -1,4 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+if (!BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_URL is not defined in Vercel environment variables");
+}
+
+const API_URL = `${BASE_URL}/api`;
 
 export interface TechNode {
   name: string;
