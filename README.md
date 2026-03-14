@@ -1,7 +1,7 @@
 # ThreatBrief
 ### AI-Powered Vulnerability Intelligence
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://threatbrief.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://threat-brief.vercel.app/)
 
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.dot.js&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)
