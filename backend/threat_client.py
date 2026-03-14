@@ -43,73 +43,44 @@ def _extract_cpe_strings(cve_data: dict) -> List[str]:
     return cpe_strings
 
 
-def fetch_recent_cves(limit: int = 100) -> list:
-    """
-    Fetches modern CVEs from NVD using a fixed date range (March 2026).
-    Always returns relevant, recent data instead of the oldest-by-default batch.
-    Uses a browser User-Agent to avoid NVD bot-blocking.
-    """
-    try:
-        params = {
-            "pubStartDate": "2026-01-01T00:00:00.000",
-            "pubEndDate":   "2026-03-13T00:00:00.000",
-            "resultsPerPage": limit,
-        }
+from datetime import datetime, timedelta
 
-        print(f"[NVD FETCH] Requesting March 2026 CVEs (up to {limit}) from NVD API...")
-        response = requests.get(
-            NVD_SIMPLE_URL,
-            params=params,
-            headers=NVD_HEADERS,
-            timeout=20,
-        )
-        print(f"[NVD FETCH] Response status: {response.status_code}")
+def fetch_recent_cves(limit=50):
+    BASE_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    now = datetime.utcnow()
+    # Look back exactly 3 days to ensure we get highly fresh results
+    start_date = (now - timedelta(days=3)).strftime("%Y-%m-%dT%H:%M:%S.000")
+    
+    params = {
+        "resultsPerPage": limit,
+        "startIndex": 0,
+        "pubStartDate": start_date,
+        "pubEndDate": now.strftime("%Y-%m-%dT%H:%M:%S.000")
+    }
+
+    try:
+        response = requests.get(BASE_URL, params=params, timeout=20)
         response.raise_for_status()
         data = response.json()
-
-        total_found = data.get("totalResults", 0)
-        print(f"[NVD FETCH] NVD reports {total_found} CVEs in date range. Parsing {limit} entries...")
-
+        
         vulnerabilities = []
         for item in data.get("vulnerabilities", []):
-            cve_data = item.get("cve", {})
-            cve_id = cve_data.get("id", "UNKNOWN")
-
-            # Extract English description
-            descriptions = cve_data.get("descriptions", [])
-            raw_desc = next(
-                (d["value"] for d in descriptions if d["lang"] == "en"),
-                "No description available.",
-            )
-
-            # Extract CVSS severity (prefer v3.1 → v3.0 → v2)
-            metrics = cve_data.get("metrics", {})
-            cvss_metrics = metrics.get("cvssMetricV31", metrics.get("cvssMetricV30", []))
-            severity = "UNKNOWN"
-            if cvss_metrics:
-                severity = cvss_metrics[0].get("cvssData", {}).get("baseSeverity", "UNKNOWN")
-            elif metrics.get("cvssMetricV2"):
-                severity = metrics["cvssMetricV2"][0].get("baseSeverity", "UNKNOWN")
-
-            published_date = cve_data.get("published", "")
-            cpe_strings = _extract_cpe_strings(cve_data)
-
+            cve = item.get("cve", {})
+            metrics = cve.get("metrics", {})
+            cvss_data = metrics.get("cvssMetricV31", [{}])[0].get("cvssData", {}) or \
+                        metrics.get("cvssMetricV30", [{}])[0].get("cvssData", {})
+            
             vulnerabilities.append({
-                "cve_id": cve_id,
-                "raw_description": raw_desc,
-                "severity": severity,
-                "published_date": published_date,
-                "cpe_strings": cpe_strings,
-                "is_emergency_fallback": False,
+                "cve_id": cve.get("id"),
+                "raw_description": cve.get("descriptions", [{}])[0].get("value", "No description"),
+                "severity": cvss_data.get("baseSeverity", "UNKNOWN"),
+                "published_date": cve.get("published"),
+                "cpe_strings": str(cve.get("configurations", [])) 
             })
-
-        print(f"[NVD FETCH] Successfully parsed {len(vulnerabilities)} CVEs.")
-        logger.info(f"NVD: Fetched {len(vulnerabilities)} CVEs.")
-        return vulnerabilities
-
+            
+        return vulnerabilities[:limit] # Hard limit to 50
     except Exception as e:
-        print(f"[NVD FETCH] *** FAILED *** Error: {e}")
-        logger.error(f"NVD API Failed: {e}. Returning empty list.")
+        print(f"[NVD CLIENT ERROR] {e}")
         return []
 
 

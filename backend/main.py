@@ -122,21 +122,21 @@ def fetch_and_store_threats(db, tech_stack: list = None):
 
     db.commit()
 
-    # ── DB RETENTION POLICY: Keep only top 300 most recent CVEs from 2026 ─────
+    # ── DB RETENTION POLICY: Keep ONLY the latest 50 CVEs ─────
     total_count = db.query(models.Vulnerability).count()
-    if total_count > 300:
-        # Find the IDs of the oldest ones to delete
+    if total_count > 50:
+        # Find the IDs of everything older than the 50 newest
         to_delete_ids = (
             db.query(models.Vulnerability.id)
             .order_by(models.Vulnerability.published_date.desc())
-            .offset(300)
+            .offset(50)
             .all()
         )
         if to_delete_ids:
             ids = [i[0] for i in to_delete_ids]
             db.query(models.Vulnerability).filter(models.Vulnerability.id.in_(ids)).delete(synchronize_session=False)
             db.commit()
-            print(f"[RECLEAN] Retention policy triggered: Removed {len(ids)} old vulnerabilities.")
+            print(f"[RECLEAN] Purged {len(ids)} old vulnerabilities. DB locked at 50 entries.")
 
     final_count = db.query(models.Vulnerability).count()
     print(f"[NVD] Fetched {len(latest_cves)} vulnerabilities. Total in DB: {final_count}")

@@ -45,23 +45,17 @@ class ThreatSummaryOutput(BaseModel):
 # ──────────────────────────────────────────────────────────────────────────────
 
 THREAT_PROMPT_TEMPLATE = """\
-You are a cybersecurity analyst. Analyze the following verified vulnerability that \
-has been matched to the user's technology stack via CPE.
+You are the "Antigravity" Cybersecurity Engine. Your job is to make complex threats simple, actionable, and easy to understand for the user.
+Analyze this vulnerability for a tech stack containing: {matched_tech}
 
-Provide:
-1. A 2-sentence plain English summary explaining the risk.
-2. A severity rank (1-10) strictly based on the description.
-3. A comprehensive list of all affected technologies/frameworks/OSes.
-4. is_patched: Set to true ONLY if the description explicitly states that a patch, \
-fix, update, or remediation is already available (look for phrases like 'upgrading to \
-version X fixes this', 'a patch has been released', 'fixed in version', 'vendor has \
-issued an update', 'users should upgrade'). If no patch is mentioned, set to false.
-
-If CISA KEV STATUS is True, override severity_rank to 10 and prepend \
-"🚨 ACTIVE EXPLOIT" to the summary.
+Provide your response strictly adhering to these rules:
+1. ai_summary: Exactly 2 simple sentences. The first sentence explains the core risk in plain English. The second sentence gives the immediate, practical workaround or fix. No heavy jargon.
+2. severity_rank: Integer 1-10 based on the risk to the matched technologies.
+3. affected_technologies: A clean list of specific software/frameworks affected.
+4. is_patched: True ONLY if the text explicitly states a patch, update, or fix is available.
 
 CISA KEV STATUS: {is_actively_exploited}
-MATCHED USER TECHNOLOGIES (from CPE): {matched_tech}
+(If True, force severity_rank to 10 and start your ai_summary with "🚨 ACTIVE EXPLOIT:".)
 
 VULNERABILITY DESCRIPTION:
 {raw_description}
@@ -120,76 +114,25 @@ def is_match(tech, cpe_strings, description):
     return in_cpe or in_desc
 
 
-def cpe_match(
-    tech_stack: List[Dict[str, str]],
-    cpe_strings,
-    description: str = "",
-    cve_id: str = "",
-) -> List[Dict[str, str]]:
-    """
-    Stack-level logic implementing Parallel Matching (Precise vs Semantic).
-    
-    1. Check A (CPE / Precise): Matches if product/vendor appears in NVD CPE data.
-    2. Check B (Keyword / Semantic): Matches if tech keyword appears in description/title.
-    3. Final Match = (Check A OR Check B).
-    """
-    # NOTE: Data Shield removed — the year filter was blocking ~85% of valid matches.
-    # The DB retention policy already limits to recent CVEs fetched by the pipeline.
-
-    AI_VENDORS = ["google", "openai", "meta", "anthropic", "huggingface", "nvidia"]
+def cpe_match(tech_stack, cpe_strings, description="", cve_id=""):
     matched = []
+    cpe_lower = str(cpe_strings).lower() if cpe_strings else ""
+    desc_lower = str(description).lower() if description else ""
 
     for tech_obj in tech_stack:
-        if isinstance(tech_obj, str):
-            tech_name = tech_obj
-            tech_cpe = ""
-        else:
-            tech_name = tech_obj.get("name", "")
-            tech_cpe = tech_obj.get("cpe", "")
-
+        tech_name = tech_obj if isinstance(tech_obj, str) else tech_obj.get("name", "")
         tech_lower = str(tech_name).lower().strip()
-        desc_lower = str(description).lower() if description else ""
-        cpe_lower  = str(cpe_strings).lower() if cpe_strings else ""
 
-        # ------------- Check A: Precise (CPE) -------------
-        precise_match = False
-        
-        # a1. Direct Product Name Match in CPE
-        if _word_match(tech_lower, cpe_lower):
-            precise_match = True
-            
-        # a2. Vendor Extraction Match
-        if not precise_match and tech_cpe:
-            parts = tech_cpe.split(":")
-            vendor = parts[3].lower() if len(parts) > 3 else ""
-            if vendor and vendor not in ["*", "-", ""]:
-                if f":{vendor}:" in cpe_lower:
-                    precise_match = True
+        # 1. Regex Match (Semantic) - Exact word boundary in description
+        pattern = rf'(?:^|[^a-zA-Z0-9]){re.escape(tech_lower)}(?:$|[^a-zA-Z0-9])'
+        regex_hit = bool(re.search(pattern, desc_lower, re.IGNORECASE))
 
-        # a3. AI Keyword Expansion to Vendors
-        is_ai_concept = tech_lower in ["ai", "artificial intelligence", "ml", "machine learning", "aiml", "ai/ml"]
-        if not precise_match and is_ai_concept:
-            for ai_vendor in AI_VENDORS:
-                if f":{ai_vendor}:" in cpe_lower:
-                    precise_match = True
-                    break
+        # 2. CPE Match (Precise) - Substring in configuration strings
+        cpe_hit = tech_lower in cpe_lower
 
-        # ------------- Check B: Semantic (Keyword) -------------
-        semantic_match = _word_match(tech_lower, desc_lower)
-
-        # ------------- Final OR Gate & Logging -------------
-        is_hit = precise_match or semantic_match
-
-        if is_hit:
-            # Prioritize Precise label if both are true
-            m_type = "Precise (CPE)" if precise_match else "Semantic (Keyword)"
-            # Log the Reason exactly as requested
-            print(f"[HYBRID] {cve_id} | CPE: {precise_match} | Keyword: {semantic_match} | Final: MATCH")
+        if regex_hit or cpe_hit:
+            m_type = "Precise (CPE)" if cpe_hit else "Semantic (Regex)"
             matched.append({"name": tech_name, "match_type": m_type})
-        else:
-            # Only print skip for transparency in logs
-            # print(f"[HYBRID] {cve_id} | CPE: False | Keyword: False | Final: SKIP")
-            pass
 
     return matched
 
